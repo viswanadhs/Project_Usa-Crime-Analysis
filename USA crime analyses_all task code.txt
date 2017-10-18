@@ -1,0 +1,53 @@
+/home/cloudera/Desktop/Projects/UCS/Crimes_-_2001_to_present.csv
+
+crime_data = LOAD '/home/cloudera/Desktop/Projects/UCS/Crimes_-_2001_to_present.csv' USING PigStorage(',') AS (id:chararray, case_no:chararray, date:chararray, block:chararray, iucr:chararray, primary_type:chararray, desc:chararray, locdesc:chararray, arrest:chararray, domestic:chararray, beat:chararray, district:chararray, ward:chararray, communityarea:chararray, fbicode:chararray, xcord:chararray, ycord:chararray, year:chararray, updatedon:chararray, lati:chararray, long:chararray, loc:chararray);
+
+1. Write a MapReduce/Pig program to calculate the number of cases investigated under each FBI code
+
+A = LOAD '/home/cloudera/Desktop/Projects/UCS/Crimes_-_2001_to_present.csv' USING PigStorage(',') AS (id:chararray, case_no:chararray, date:chararray, block:chararray, iucr:chararray, primary_type:chararray, desc:chararray, locdesc:chararray, arrest:chararray, domestic:chararray, beat:chararray, district:chararray, ward:chararray, communityarea:chararray, fbicode:chararray, xcord:chararray, ycord:chararray, year:chararray, updatedon:chararray, lati:chararray, long:chararray, loc:chararray);
+
+B = group A by fbicode;
+
+C = foreach B generate group, COUNT(A.fbicode);
+
+****************************************************************************************************************************
+2. Write a MapReduce/Pig program to calculate the number of cases investigated under FBI code 32.
+
+A = LOAD '/home/cloudera/Desktop/Projects/UCS/Crimes_-_2001_to_present.csv' USING PigStorage(',') AS (id:chararray, case_no:chararray, date:chararray, block:chararray, iucr:chararray, primary_type:chararray, desc:chararray, locdesc:chararray, arrest:chararray, domestic:chararray, beat:chararray, district:chararray, ward:chararray, communityarea:chararray, fbicode:bytearray, xcord:chararray, ycord:chararray, year:chararray, updatedon:chararray, lati:chararray, long:chararray, loc:chararray);
+
+B = filter A by fbicode == 32;
+
+C = Foreach B Generate fbicode;
+
+D = GROUP C ALL;
+
+E = foreach D generate COUNT(C.fbicode);
+
+*******************************************************************************************************************************
+3. Write a MapReduce/Pig program to calculate the number of arrests in theft district wise.
+
+A = LOAD '/home/cloudera/Desktop/Projects/UCS/Crimes_-_2001_to_present.csv' USING PigStorage(',') AS (id:chararray, case_no:chararray, date:chararray, block:chararray, iucr:chararray, primary_type:chararray, desc:chararray, locdesc:chararray, arrest:chararray, domestic:chararray, beat:chararray, district:chararray, ward:chararray, communityarea:chararray, fbicode:chararray, xcord:chararray, ycord:chararray, year:chararray, updatedon:chararray, lati:chararray, long:chararray, loc:chararray);
+
+B = filter A by primary_type == 'THEFT' and arrest == 'true';
+
+C = group B by district;
+
+D = DISTINCT C;
+
+E = foreach D generate group, COUNT(B.district);
+
+*******************************************************************************************************************************
+Write a MapReduce/Pig program to calculate the number of arrests done between October 2014 and October 2015.
+
+A = LOAD '/home/cloudera/Desktop/Projects/UCS/Crimes_-_2001_to_present.csv' USING PigStorage(',') AS (id:chararray, case_no:chararray, date:chararray, block:chararray, iucr:chararray, primary_type:chararray, desc:chararray, locdesc:chararray, arrest:bytearray, domestic:chararray, beat:chararray, district:chararray, ward:chararray, communityarea:chararray, fbicode:chararray, xcord:chararray, ycord:chararray, year:chararray, updatedon:chararray, lati:chararray, long:chararray, loc:chararray);
+
+B = FOREACH A Generate (int)SUBSTRING(date,6,10) AS Year, (int)SUBSTRING(date,0,2) As Months, arrest;
+
+C = Filter B by Year >= 2014 and Months >= 10 and Year <= 2015 and Months <= 10;
+
+D = Filter C by arrest == 'true';
+
+E = GROUP D ALL;
+
+F = foreach E generate group, COUNT(D.arrest);
+
